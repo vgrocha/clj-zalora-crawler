@@ -2,13 +2,14 @@
   (:require [clojure.string :as str]))
 
 (defn text
-  "Cleans up text and extract characters and white-spaces only"
+  "Cleans up text fields"
   [s]
   (->> s
        str/trim))
 
 (defn price
-  "extract price according to format, returns double"
+  "extract price according to format 123.45 and
+tries to parse as double"
   [s]
   (let [price-str (->> s
                        str/trim

@@ -14,7 +14,9 @@
 
 (def default-visited "visited.txt")
 
-(defn fetch-url [url & sub-paths]
+(defn fetch-url
+  "Fetches an 'url' 'sub-path'es, return an html node"
+  [url & sub-paths]
   (println "Fetching " (apply str url sub-paths))
   (try
     (h/html-resource (java.net.URL. (apply str url sub-paths)))

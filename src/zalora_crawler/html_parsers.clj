@@ -3,12 +3,16 @@
             [zalora-crawler.datastructures :refer [make-sku]]
             [zalora-crawler.parsers :as parse]))
 
-(defn get-first-text-content [html-snippet selector]
+(defn get-first-text-content
+  "Given an html-snippet, return the first match for the 'selector'"
+  [html-snippet selector]
   (-> (h/select html-snippet selector)
       first
       h/text))
 
-(defn parse-sku-html-snippet [page-title html-snippet]
+(defn parse-sku-html-snippet
+  "Parses the html snippet for a single sku, returns SKU object"
+  [page-title html-snippet]
   (make-sku (parse/text page-title)
             (parse/text (get-first-text-content html-snippet [:span.itm-brand]))
             (parse/text (get-first-text-content html-snippet [:em.itm-title]))
@@ -16,6 +20,7 @@
             (parse/price (get-first-text-content html-snippet [:span.itm-price.old]))))
 
 (defn skus-page
+  "Parse the SKUs home page, return a list of the first 'n' SKUs found"
   ([page]
      (skus-page 20 page))
   ([n page]
@@ -24,7 +29,9 @@
            skus (map (partial parse-sku-html-snippet page-title) (take n skus-nodes))]
        skus)))
 
-(defn extract-urls [page]
+(defn extract-urls
+  "Extract urls to continue scraping"
+  [page]
   (->> (h/select page [:a])
        (keep #(get-in % [:attrs :href]))
        ;;only in subdomain, naive approach to url validation
