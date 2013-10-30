@@ -35,21 +35,18 @@
                           (count discounts))
           
           discount-fraction (/ discounts (count its))
-          page-stats (make-page-stats page-title min-price max-price avg-discount discount-fraction)
-          ]
-      (persist! page-stats default-stats-file)
-            
-      ))
-  
-  )  
+          page-stats (make-page-stats page-title min-price max-price avg-discount discount-fraction)]
+      (persist! page-stats default-stats-file))))  
 
 (defn process-url
   ([root-node]
      (loop [to-visit-urls #{"/"}
             visited #{}]
+       ;;stats display
        (println "Visited "(count visited)
                 "currently remaining" (count to-visit-urls))
 
+       ;;spit data into files for visualization
        (spit default-visited visited)
        (spit default-to-visit-file to-visit-urls)
              
@@ -59,12 +56,13 @@
                found-to-visit-urls (hparse/extract-urls html-page)
                newly-acquainted-urls (cset/difference found-to-visit-urls visited to-visit-urls)
                skus (hparse/skus-page html-page)]
+       
+           (println "New skus " (count skus))
+           (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
 
            (doseq [s skus]
              (persist! s default-output-file))
-           
-           (println "New skus " (count skus))
-           (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
+
            (recur (into (cset/difference to-visit-urls #{visiting-url}) newly-acquainted-urls)
                   (conj visited visiting-url)))))))
 
