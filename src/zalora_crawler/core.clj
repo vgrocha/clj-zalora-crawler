@@ -43,15 +43,17 @@
                html-page (fetch-url root-node visiting-url)
                found-to-visit-urls (hparse/extract-urls html-page)
                newly-acquainted-urls (cset/difference found-to-visit-urls visited to-visit-urls)
-               skus (hparse/skus-page html-page)]
+               skus (hparse/skus-page html-page)
+               page-stats (make-page-stats skus)]
            
            (println "New skus " (count skus))
            (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
-
+           (println page-stats)
+           
            (doseq [s skus]
              (persist! s))
 
-           (persist! (make-page-stats skus))
+           (persist! page-stats)
            
            (recur (into (cset/difference to-visit-urls #{visiting-url}) newly-acquainted-urls)
                   (conj visited visiting-url)))))))

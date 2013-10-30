@@ -67,13 +67,11 @@
                              (when (and (number? price)
                                         (number? old-price)
                                         (not (zero? old-price)))
-                               (/ price old-price))) skus)
+                               (- 1 (/ price old-price))))
+                          skus)
           avg-discount (when-not (empty? discounts)
                          (/ (apply + discounts)
                             (count discounts)))
           
-          discount-fraction (/ (count discounts) (count skus))
-          res (PageStats. page-title min-price max-price avg-discount discount-fraction)]
-      (println res)
-      res
-      )))
+          discount-fraction (/ (count discounts) (count skus))]
+      (PageStats. page-title min-price max-price avg-discount discount-fraction))))
