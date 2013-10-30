@@ -21,7 +21,7 @@
     (catch Exception e nil)))
 
 (defn calculate-skus-stats [its]
-  (when-not (empty its)
+  (when-not (empty? its)
     (let [page-title (-> its first :page-title)
           prices (map :price its)
           max-price (apply max prices)
@@ -31,12 +31,16 @@
                              (when (and (number? price)
                                         (number? old-price)
                                         (not (zero? old-price)))
-                               (/ price old-price))))
-          avg-discount (/ (apply + discounts)
-                          (count discounts))
+                               (/ price old-price))) its)
+          avg-discount (when-not (empty? discounts)
+                         (/ (apply + discounts)
+                            (count discounts)))
           
-          discount-fraction (/ discounts (count its))]
-      (make-page-stats page-title min-price max-price avg-discount discount-fraction))))  
+          discount-fraction (/ (count discounts) (count its))
+          res (make-page-stats page-title min-price max-price avg-discount discount-fraction)]
+      (println res)
+      res
+      )))  
 
 (defn process-url
   ([root-node]
