@@ -52,9 +52,6 @@
     (spit filename (str (key-vals-to-csv this [:page-title :min-price :max-price :avg-discount :discount-fraction]) "\n") :append true))
   (persist! [this] (persist! this default-stats-file)))
 
-(defn make-page-stats [page-title min-price max-price avg-discount discount-fraction]
-  (PageStats. page-title min-price max-price avg-discount discount-fraction))
-
 (defn make-page-stats
   "Given a list of 'sku's in a page, calculate the page stats"
   [skus]
