@@ -20,9 +20,10 @@
     (h/html-resource (java.net.URL. (apply str url sub-paths)))
     (catch Exception e nil)))
 
-(defn calculate-skus-stats [page-title its]
+(defn calculate-skus-stats [its]
   (when-not (empty its)
-    (let [prices (map :price its)
+    (let [page-title (-> its first :page-title)
+          prices (map :price its)
           max-price (apply max prices)
           min-price (apply min prices)
           
@@ -34,9 +35,8 @@
           avg-discount (/ (apply + discounts)
                           (count discounts))
           
-          discount-fraction (/ discounts (count its))
-          page-stats (make-page-stats page-title min-price max-price avg-discount discount-fraction)]
-      (persist! page-stats default-stats-file))))  
+          discount-fraction (/ discounts (count its))]
+      (make-page-stats page-title min-price max-price avg-discount discount-fraction))))  
 
 (defn process-url
   ([root-node]
@@ -56,19 +56,27 @@
                found-to-visit-urls (hparse/extract-urls html-page)
                newly-acquainted-urls (cset/difference found-to-visit-urls visited to-visit-urls)
                skus (hparse/skus-page html-page)]
-       
+           
            (println "New skus " (count skus))
            (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
 
            (doseq [s skus]
              (persist! s default-output-file))
 
+           (persist! (calculate-skus-stats skus) default-stats-file)
+           
            (recur (into (cset/difference to-visit-urls #{visiting-url}) newly-acquainted-urls)
                   (conj visited visiting-url)))))))
 
 (defn scrap-zalora []
   ;;clean output file and write header
+  
   (-> (File. default-output-file)
       .delete)
   (persist! (make-sku "page-title" "brand" "title" "price" "old-price") default-output-file)
+  
+  (-> (File. default-stats-file)
+      .delete)
+  (make-page-stats "page-title" "min-price" "max-price" "avg-discount" "discount-fraction")
+  
   (process-url "http://www.zalora.sg"))
