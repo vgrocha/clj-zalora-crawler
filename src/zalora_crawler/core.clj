@@ -1,8 +1,8 @@
 (ns zalora-crawler.core
   (:require [net.cgrand.enlive-html :as h]
             [clojure.string :as str]
-            [clojure.set :as cset]
-            )
+            [clojure.set :as cset])
+  (:require [zalora-crawler.datastructures :refer [persist! make-sku make-page-stats]])
   (:import [java.io File]))
 
 (def default-output-file "output.csv")
@@ -67,6 +67,7 @@
           discount-fraction (/ discounts (count its))
           page-stats (make-page-stats page-title min-price max-price avg-discount discount-fraction)
           ]
+      (persist! page-stats default-stats-file)
             
       ))
   
@@ -78,7 +79,7 @@
         skus (map (partial parse-item page-title) (take 20 items-nodes))]
 
     (doseq [s skus]
-      (persist-item! s))
+      (persist! s default-output-file))
 
     skus))
 
@@ -115,5 +116,5 @@
   ;;clean output file and write header
   (-> (File. default-output-file)
       .delete)
-  (persist-item! (SKU. "page-title" "brand" "title" "price" "old-price"))
+  (persist! (make-sku "page-title" "brand" "title" "price" "old-price") default-output-file)
   (process-url "http://www.zalora.sg"))
