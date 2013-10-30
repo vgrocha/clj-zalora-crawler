@@ -25,7 +25,7 @@
   ([f]
      (-> (File. f)
          .delete)
-     (spit f (str (interpose ", " [ "page-title" "brand" "title" "price" "old-price"]) "\n"))))
+     (spit f (apply str (interpose ", " [ "page-title" "brand" "title" "price" "old-price\n"])))))
 
 (defrecord SKU [page-title brand title price old-price]
   PersistProtocol
@@ -44,7 +44,7 @@
   ([f]
      (-> (File. f)
          .delete)
-     (spit f (str (interpose ", " [ "page-title" "min-price" "max-price" "avg-discount" "discount-fraction"]) "\n"))))
+     (spit f (apply str (interpose ", " [ "page-title" "min-price" "max-price" "avg-discount" "discount-fraction\n"])))))
 
 (defrecord PageStats [page-title min-price max-price avg-discount discount-fraction]
   PersistProtocol
