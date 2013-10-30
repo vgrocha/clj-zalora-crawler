@@ -3,25 +3,25 @@
             [zalora-crawler.datastructures :refer [make-sku]]
             [zalora-crawler.parsers :as parse]))
 
-(defn get-first-text-content [html-seg selector]
-  (-> (h/select html-seg selector)
+(defn get-first-text-content [html-snippet selector]
+  (-> (h/select html-snippet selector)
       first
       h/text))
 
-(defn parse-item [page-title html-seg]
+(defn parse-sku-html-snippet [page-title html-snippet]
   (make-sku (parse/text page-title)
-            (parse/text (get-first-text-content html-seg [:span.itm-brand]))
-            (parse/text (get-first-text-content html-seg [:em.itm-title]))
-            (parse/price (get-first-text-content html-seg [[:span :.itm-price (h/but-node :.old)] [:span h/last-child]]))
-            (parse/price (get-first-text-content html-seg [:span.itm-price.old]))))
+            (parse/text (get-first-text-content html-snippet [:span.itm-brand]))
+            (parse/text (get-first-text-content html-snippet [:em.itm-title]))
+            (parse/price (get-first-text-content html-snippet [[:span :.itm-price (h/but-node :.old)] [:span h/last-child]]))
+            (parse/price (get-first-text-content html-snippet [:span.itm-price.old]))))
 
-(defn items-page
+(defn skus-page
   ([page]
-     (process-items-page 20 page))
+     (skus-page 20 page))
   ([n page]
      (let [page-title (get-first-text-content page [[:div.paging] [:h2] [:span.uc]])
-           items-nodes (h/select page [:ul#productsCatalog :li])
-           skus (map (partial parse-item page-title) (take n items-nodes))]
+           skus-nodes (h/select page [:ul#productsCatalog :li])
+           skus (map (partial parse-sku-html-snippet page-title) (take n skus-nodes))]
        skus)))
 
 (defn extract-urls [page]

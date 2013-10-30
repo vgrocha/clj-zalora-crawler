@@ -20,7 +20,7 @@
     (h/html-resource (java.net.URL. (apply str url sub-paths)))
     (catch Exception e nil)))
 
-(defn calculate-items-stats [page-title its]
+(defn calculate-skus-stats [page-title its]
   (when-not (empty its)
     (let [prices (map :price its)
           max-price (apply max prices)
@@ -58,12 +58,12 @@
                html-page (fetch-url root-node visiting-url)
                found-to-visit-urls (hparse/extract-urls html-page)
                newly-acquainted-urls (cset/difference found-to-visit-urls visited to-visit-urls)
-               items (hparse/items-page html-page)]
+               skus (hparse/skus-page html-page)]
 
-           (doseq [s items]
+           (doseq [s skus]
              (persist! s default-output-file))
            
-           (println "New items " (count items))
+           (println "New skus " (count skus))
            (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
            (recur (into (cset/difference to-visit-urls #{visiting-url}) newly-acquainted-urls)
                   (conj visited visiting-url)))))))
