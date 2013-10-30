@@ -28,5 +28,5 @@
   (->> (h/select page [:a])
        (keep #(get-in % [:attrs :href]))
        ;;only in subdomain, naive approach to url validation
-       (filter #(re-matches #"(/[a-zA-Z0-9\-_]+)+" %))
+       (filter #(re-matches #"(/[a-zA-Z0-9\-_]+){3}/?" %))
        set))
