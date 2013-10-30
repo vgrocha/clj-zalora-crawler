@@ -1,14 +1,10 @@
 (ns zalora-crawler.core
   (:require [net.cgrand.enlive-html :as h]
             [clojure.set :as cset])
-  (:require [zalora-crawler.datastructures :refer [persist! make-sku make-page-stats]]
+  (:require [zalora-crawler.datastructures :refer [initialize-sku-file! initialize-stats-file! persist! make-sku make-page-stats]]
             [zalora-crawler.parsers :as parse]
             [zalora-crawler.html-parsers :as hparse])
   (:import [java.io File]))
-
-(def default-output-file "output.csv")
-
-(def default-stats-file "stats.csv")
 
 (def default-to-visit-file "tovisit.txt")
 
@@ -21,28 +17,6 @@
   (try
     (h/html-resource (java.net.URL. (apply str url sub-paths)))
     (catch Exception e nil)))
-
-(defn calculate-skus-stats [its]
-  (when-not (empty? its)
-    (let [page-title (-> its first :page-title)
-          prices (map :price its)
-          max-price (apply max prices)
-          min-price (apply min prices)
-          
-          discounts (keep #(let [{:keys [price old-price]} %]
-                             (when (and (number? price)
-                                        (number? old-price)
-                                        (not (zero? old-price)))
-                               (/ price old-price))) its)
-          avg-discount (when-not (empty? discounts)
-                         (/ (apply + discounts)
-                            (count discounts)))
-          
-          discount-fraction (/ (count discounts) (count its))
-          res (make-page-stats page-title min-price max-price avg-discount discount-fraction)]
-      (println res)
-      res
-      )))  
 
 (defn process-url
   ([root-node]
@@ -67,22 +41,16 @@
            (println "Found urls" (count found-to-visit-urls) ", newly acquainted" (count newly-acquainted-urls))
 
            (doseq [s skus]
-             (persist! s default-output-file))
+             (persist! s))
 
-           (persist! (calculate-skus-stats skus) default-stats-file)
+           (persist! (make-page-stats skus))
            
            (recur (into (cset/difference to-visit-urls #{visiting-url}) newly-acquainted-urls)
                   (conj visited visiting-url)))))))
 
 (defn scrap-zalora []
   ;;clean output file and write header
-  
-  (-> (File. default-output-file)
-      .delete)
-  (persist! (make-sku "page-title" "brand" "title" "price" "old-price") default-output-file)
-  
-  (-> (File. default-stats-file)
-      .delete)
-  (make-page-stats "page-title" "min-price" "max-price" "avg-discount" "discount-fraction")
+  (initialize-sku-file!)
+  (initialize-stats-file!)
   
   (process-url "http://www.zalora.sg"))
