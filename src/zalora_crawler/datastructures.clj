@@ -3,6 +3,10 @@
 (defprotocol PersistProtocol
   (persist! [this filename] "Saves the element in filename"))
 
+(extend-type nil
+  PersistProtocol
+  (persist! [this filename]))
+
 (defn key-vals-to-csv [m keys]
   (->> (map #(% m) keys)
        (interpose ", ")
