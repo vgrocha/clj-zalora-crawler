@@ -7,9 +7,14 @@
             [zalora-crawler.html-parsers :as hparse])
   (:import [java.io File]))
 
+;;(TODO) change 'spit'ings to a buffered output
+
 (def default-to-visit-file "tovisit.txt")
 
-(def default-visited "visited.txt")
+(def default-visited-file "visited.txt")
+
+(def default-url-error-file "url-error.txt")
+
 
 (defn fetch-url
   "Fetches an 'url' 'sub-path'es, return an html node"
@@ -17,7 +22,9 @@
   (println "Fetching " (apply str url sub-paths))
   (try
     (h/html-resource (java.net.URL. (apply str url sub-paths)))
-    (catch Exception e nil)))
+    (catch Exception e
+      ;;output url with problems
+      (spit default-url-error-file (apply str url sub-paths)))))
 
 (defn process-url
   ([root-node]
@@ -28,7 +35,7 @@
                 "currently remaining" (count to-visit-urls))
 
        ;;spit data into files for visualization
-       (spit default-visited visited)
+       (spit default-visited-file visited)
        (spit default-to-visit-file to-visit-urls)
              
        (when-not (empty? to-visit-urls)
@@ -53,6 +60,9 @@
   ;;clean output file and write header
   (initialize-sku-file!)
   (initialize-stats-file!)
+
+  (-> (File. default-url-error-file)
+      .delete)
   
   (process-url "http://www.zalora.sg"))
 
