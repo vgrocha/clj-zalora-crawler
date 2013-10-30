@@ -16,6 +16,8 @@
        (interpose ", ")
        (apply str)))
 
+;;(TODO) create a default initializer for the files, that prints
+;;the header according to record fields
 
 ;;SKU datastructure
 (def default-sku-file "skus.csv")
