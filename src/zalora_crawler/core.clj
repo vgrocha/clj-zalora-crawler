@@ -32,45 +32,23 @@
                        str/trim
                        (re-find #"(\d+\.\d{2}).SGD")
                        last)]
-    (try
-      (Double/parseDouble price-str)
-      (catch NumberFormatException e 0))))
+    (when-not (nil? price-str)
+      (try
+        (Double/parseDouble price-str)
+        (catch NumberFormatException e 0)))))
 
 (defn get-first-text-content [html-seg selector]
   (-> (h/select html-seg selector)
       first
       h/text))
 
-(defrecord SKU [page-title brand title price old-price])
-
-(defn make-sku [page-title brand title price old-price]
-  (SKU. page-title brand title price old-price))
 
 (defn parse-item [page-title html-seg]
   (make-sku (text-parse page-title)
-        (text-parse (get-first-text-content html-seg [:span.itm-brand]))
-        (text-parse (get-first-text-content html-seg [:em.itm-title]))
-        (price-parse (get-first-text-content html-seg [[:span :.itm-price (h/but-node :.old)] [:span h/last-child]]))
-        (price-parse (get-first-text-content html-seg [:span.itm-price.old]))))
-
-(defn persist-item! [it]
-  (let [out-line (->> (map #(% it) [:page-title :brand :title :price :old-price])
-                      (interpose ", ")
-                      (apply str)
-                      (str "\n"))]
-    (spit default-output-file out-line :append true)))
-
-(defrecord PageStats [page-title min-price max-price avg-discount discount-fraction])
-
-(defn make-page-stats [page-title min-price max-price avg-discount discount-fraction]
-  (PageStats. page-title min-price max-price avg-discount discount-fraction))
-
-(defn persist-stats! [page-stats]
-  (let [out-line (->> (map #(% page-stats) [:page-title :min-price :max-price :avg-discount :discount-fraction])
-                      (interpose ", ")
-                      (apply str)
-                      (str "\n"))]
-    (spit default-stats-file out-line :append true)))
+            (text-parse (get-first-text-content html-seg [:span.itm-brand]))
+            (text-parse (get-first-text-content html-seg [:em.itm-title]))
+            (price-parse (get-first-text-content html-seg [[:span :.itm-price (h/but-node :.old)] [:span h/last-child]]))
+            (price-parse (get-first-text-content html-seg [:span.itm-price.old]))))
 
 (defn calculate-items-stats [page-title its]
   (when-not (empty its)
