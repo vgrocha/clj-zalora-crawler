@@ -1,4 +1,5 @@
 (ns zalora-crawler.core
+  (:gen-class)
   (:require [net.cgrand.enlive-html :as h]
             [clojure.set :as cset])
   (:require [zalora-crawler.datastructures :refer [initialize-sku-file! initialize-stats-file! persist! make-sku make-page-stats]]
@@ -54,3 +55,6 @@
   (initialize-stats-file!)
   
   (process-url "http://www.zalora.sg"))
+
+(defn -main [& _]
+  (scrap-zalora))
