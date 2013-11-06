@@ -33,4 +33,4 @@ in the project root.
 
 Copyright © 2013 vgrocha
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the Beerware, the same as beer recipes.
